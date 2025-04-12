@@ -30,14 +30,14 @@ const Navbar = () => {
         >
           <Link
             href="/"
-            className="flex items-center gap-2 font-blue text-2xl mr-6 font-mono group"
+            className="flex items-center gap-1 sm:gap-2 font-blue text-lg sm:text-2xl mr-4 sm:mr-6 font-mono group"
           >
             <motion.div
               whileHover={{ rotate: 360 }}
               transition={{ duration: 1 }}
               className="relative"
             >
-              <CodeIcon className="size-8 text-blue-500" />
+              <CodeIcon className="size-6 sm:size-8 text-blue-500" />
               <motion.div
                 className="absolute inset-0 bg-blue-500/10 rounded-full"
                 initial={{ scale: 0 }}
@@ -46,12 +46,20 @@ const Navbar = () => {
               />
             </motion.div>
             <motion.span 
-              className="bg-gradient-to-r from-blue-600 to-teal-500 bg-clip-text text-transparent"
+              className="bg-gradient-to-r from-blue-600 to-teal-500 bg-clip-text text-transparent hidden xs:block"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.4 }}
             >
               TidoMeeting
+            </motion.span>
+            <motion.span 
+              className="bg-gradient-to-r from-blue-600 to-teal-500 bg-clip-text text-transparent xs:hidden"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+            >
+              Tido
             </motion.span>
           </Link>
         </motion.div>
