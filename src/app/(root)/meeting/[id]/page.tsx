@@ -10,13 +10,14 @@ import { useParams } from "next/navigation";
 import { useState } from "react";
 
 function MeetingPage() {
-  const { id } = useParams();
+  const params = useParams();
+  const id = params?.id?.toString() || "";
   const { isLoaded } = useUser();
   const { call, isCallLoading } = useGetCallById(id);
 
   const [isSetupComplete, setIsSetupComplete] = useState(false);
 
-  if (!isLoaded || isCallLoading) return <LoaderUI />;
+  if (!isLoaded || isCallLoading || !id) return <LoaderUI />;
 
   if (!call) {
     return (

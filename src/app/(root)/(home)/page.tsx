@@ -9,15 +9,14 @@ import { api } from "../../../../convex/_generated/api";
 import { useRouter } from "next/navigation";
 import MeetingModal from "@/components/ui/MeetingModal";
 import LoaderUI from "@/components/LoaderUi";
-import { Loader2Icon, Calendar, Clock, Users } from "lucide-react";
+import { Calendar, Loader2Icon, Users } from "lucide-react";
 import MeetingCard from "@/components/MeetingCard";
 import { motion } from "framer-motion";
-import { cn } from "@/lib/utils";
 
 export default function Home() {
   const router = useRouter();
 
-  const { isInterviewer, isCandidate, isLoading } = useUserRole();
+  const { isInterviewer, isLoading } = useUserRole();
   const interviews = useQuery(api.interviews.getMyInterviews);
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState<"start" | "join">();
@@ -84,7 +83,7 @@ export default function Home() {
                 </div>
                 <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10">
                   <Calendar className="h-5 w-5 text-primary" />
-                  <span className="text-sm font-medium">Today's Meetings</span>
+                  <span className="text-sm font-medium">Today&apos;s Meetings</span>
                 </div>
               </motion.div>
             </div>
@@ -125,7 +124,7 @@ export default function Home() {
               </p>
             </div>
             <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10">
-              <Clock className="h-5 w-5 text-primary" />
+              <Calendar className="h-5 w-5 text-primary" />
               <span className="text-sm font-medium">Upcoming</span>
             </div>
           </div>

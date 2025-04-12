@@ -1,32 +1,63 @@
 import { DeviceSettings, useCall, VideoPreview } from "@stream-io/video-react-sdk";
 import { useEffect, useState } from "react";
 import { Card } from "./ui/card";
-import { CameraIcon, MicIcon, SettingsIcon } from "lucide-react";
+import { CameraIcon, CheckIcon, CopyIcon, MicIcon, SettingsIcon } from "lucide-react";
 import { Switch } from "./ui/switch";
 import { Button } from "./ui/button";
+import toast from "react-hot-toast";
 
 function MeetingSetup({ onSetupComplete }: { onSetupComplete: () => void }) {
   const [isCameraDisabled, setIsCameraDisabled] = useState(true);
   const [isMicDisabled, setIsMicDisabled] = useState(false);
+  const [isInterviewer] = useState(false);
+  const [isCandidate] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
 
   const call = useCall();
 
-  if (!call) return null;
+  useEffect(() => {
+    if (call) {
+      if (isCameraDisabled) call.camera.disable();
+      else call.camera.enable();
+    }
+  }, [isCameraDisabled, call]);
 
   useEffect(() => {
-    if (isCameraDisabled) call.camera.disable();
-    else call.camera.enable();
-  }, [isCameraDisabled, call.camera]);
+    if (call) {
+      if (isMicDisabled) call.microphone.disable();
+      else call.microphone.enable();
+    }
+  }, [isMicDisabled, call]);
 
   useEffect(() => {
-    if (isMicDisabled) call.microphone.disable();
-    else call.microphone.enable();
-  }, [isMicDisabled, call.microphone]);
+    if (call && isInterviewer) {
+      // Interviewer setup logic
+    }
+  }, [isInterviewer, call]);
+
+  useEffect(() => {
+    if (call && isCandidate) {
+      // Candidate setup logic
+    }
+  }, [isCandidate, call]);
 
   const handleJoin = async () => {
-    await call.join();
-    onSetupComplete();
+    if (call) {
+      await call.join();
+      onSetupComplete();
+    }
   };
+
+  const handleCopyId = async () => {
+    if (call) {
+      await navigator.clipboard.writeText(call.id);
+      setIsCopied(true);
+      toast.success("Meeting ID copied to clipboard!");
+      setTimeout(() => setIsCopied(false), 2000);
+    }
+  };
+
+  if (!call) return null;
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6 bg-background/95">
@@ -48,17 +79,30 @@ function MeetingSetup({ onSetupComplete }: { onSetupComplete: () => void }) {
           </Card>
 
           {/* CARD CONTROLS */}
-
           <Card className="md:col-span-1 p-6">
             <div className="h-full flex flex-col">
               {/* MEETING DETAILS  */}
               <div>
-                <h2 className="text-xl font-semibold mb-1">Meeting Details</h2>
-                <p className="text-sm text-muted-foreground break-all">{call.id}</p>
+                <h2 className="text-xl font-semibold mb-3">Meeting Details</h2>
+                <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
+                  <p className="text-sm font-medium flex-1 break-all">{call.id}</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="shrink-0"
+                    onClick={handleCopyId}
+                  >
+                    {isCopied ? (
+                      <CheckIcon className="h-4 w-4" />
+                    ) : (
+                      <CopyIcon className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
               </div>
 
               <div className="flex-1 flex flex-col justify-between">
-                <div className="spacey-6 mt-8">
+                <div className="space-y-6 mt-8">
                   {/* CAM CONTROL */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
