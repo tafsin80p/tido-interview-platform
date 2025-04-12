@@ -1,0 +1,188 @@
+import {
+  CallControls,
+  CallingState,
+  CallParticipantsList,
+  PaginatedGridLayout,
+  SpeakerLayout,
+  useCallStateHooks,
+} from "@stream-io/video-react-sdk";
+import { LayoutListIcon, LoaderIcon, UsersIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "./ui/resizable";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
+import { Button } from "./ui/button";
+import EndCallButton from "./EndCallButton";
+import CodeEditor from "./CodeEditor";
+import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
+
+function MeetingRoom() {
+  const router = useRouter();
+  const [layout, setLayout] = useState<"grid" | "speaker">("speaker");
+  const [showParticipants, setShowParticipants] = useState(false);
+  const { useCallCallingState } = useCallStateHooks();
+
+  const callingState = useCallCallingState();
+
+  if (callingState !== CallingState.JOINED) {
+    return (
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="h-96 flex items-center justify-center"
+      >
+        <motion.div
+          animate={{ 
+            rotate: 360,
+            scale: [1, 1.2, 1]
+          }}
+          transition={{ 
+            duration: 2,
+            repeat: Infinity,
+            ease: "linear"
+          }}
+        >
+          <LoaderIcon className="size-6 text-primary" />
+        </motion.div>
+      </motion.div>
+    );
+  }
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="h-[calc(100vh-4rem-1px)]"
+    >
+      <ResizablePanelGroup direction="horizontal">
+        <ResizablePanel defaultSize={35} minSize={25} maxSize={100} className="relative">
+          {/* VIDEO LAYOUT */}
+          <motion.div 
+            className="absolute inset-0"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3 }}
+          >
+            <AnimatePresence mode="wait">
+              {layout === "grid" ? (
+                <motion.div
+                  key="grid"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <PaginatedGridLayout />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="speaker"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <SpeakerLayout />
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* PARTICIPANTS LIST OVERLAY */}
+            <AnimatePresence>
+              {showParticipants && (
+                <motion.div
+                  initial={{ opacity: 0, x: "100%" }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: "100%" }}
+                  transition={{ type: "spring", damping: 20 }}
+                  className="absolute right-0 top-0 h-full w-[300px] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+                >
+                  <CallParticipantsList onClose={() => setShowParticipants(false)} />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+
+          {/* VIDEO CONTROLS */}
+          <motion.div 
+            className="absolute bottom-4 left-0 right-0"
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.3 }}
+          >
+            <div className="flex flex-col items-center gap-4">
+              <div className="flex items-center gap-2 flex-wrap justify-center px-4">
+                <CallControls onLeave={() => router.push("/")} />
+
+                <motion.div 
+                  className="flex items-center gap-2"
+                  whileHover={{ scale: 1.05 }}
+                >
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+                        <Button variant="outline" size="icon" className="size-10">
+                          <LayoutListIcon className="size-4" />
+                        </Button>
+                      </motion.div>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem 
+                        onClick={() => setLayout("grid")}
+                        className={cn(
+                          "cursor-pointer transition-colors",
+                          layout === "grid" && "bg-primary/10"
+                        )}
+                      >
+                        Grid View
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => setLayout("speaker")}
+                        className={cn(
+                          "cursor-pointer transition-colors",
+                          layout === "speaker" && "bg-primary/10"
+                        )}
+                      >
+                        Speaker View
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+
+                  <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className={cn(
+                        "size-10 transition-colors",
+                        showParticipants && "bg-primary/10"
+                      )}
+                      onClick={() => setShowParticipants(!showParticipants)}
+                    >
+                      <UsersIcon className="size-4" />
+                    </Button>
+                  </motion.div>
+
+                  <EndCallButton />
+                </motion.div>
+              </div>
+            </div>
+          </motion.div>
+        </ResizablePanel>
+
+        <ResizableHandle withHandle />
+
+        <ResizablePanel defaultSize={65} minSize={25}>
+          <CodeEditor />
+        </ResizablePanel>
+      </ResizablePanelGroup>
+    </motion.div>
+  );
+}
+export default MeetingRoom;
